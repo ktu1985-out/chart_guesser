@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Question builder · Chart Guesser</title>
+  <meta name="description" content="Turn spreadsheet data into a Chart Guesser question.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314213d'/%3E%3Crect x='6' y='7' width='20' height='4' rx='1' fill='%23ffd23f'/%3E%3Cpath d='M6 25 L12 19 L17 22 L26 14' fill='none' stroke='%23ffffff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <a class="brand" href="./">Chart Guesser</a>
+      <a class="toplink" href="./">Back to the game</a>
+    </header>
+
+    <main>
+      <div class="builder-intro">
+        <h1>Question builder</h1>
+        <p>Paste your data, write the answers and check the preview. Then copy the code into a deck file, as described under the code.</p>
+      </div>
+
+      <div class="builder">
+        <form id="bform" class="bform" autocomplete="off" novalidate>
+          <fieldset>
+            <legend>Data</legend>
+            <label class="field">
+              <span>Paste two columns from a spreadsheet</span>
+              <span class="hint">First column: years (1990), dates (2020-04 or 2020-04-20) or labels (Mon, Tue). Second column: the numbers. A header row is fine, and an empty cell becomes a gap in the line.</span>
+              <textarea name="data" class="data" rows="9" spellcheck="false" placeholder="Year&#9;Value&#10;2019&#9;12.5&#10;2020&#9;14.1&#10;2021&#9;13.8"></textarea>
+            </label>
+            <p class="data-summary" id="data-summary" aria-live="polite"></p>
+            <div class="row">
+              <label class="field"><span>Chart type</span>
+                <select name="type">
+                  <option value="line">Line</option>
+                  <option value="bar">Bars</option>
+                  <option value="scatter">Dots (scatter)</option>
+                </select>
+              </label>
+              <label class="field"><span>Decimal separator</span>
+                <select name="decimal">
+                  <option value="auto">Detect it</option>
+                  <option value=".">Dot, as in 1234.5</option>
+                  <option value=",">Comma, as in 1234,5</option>
+                </select>
+              </label>
+              <label class="field"><span>Dots on the line</span>
+                <select name="points">
+                  <option value="auto">Automatic</option>
+                  <option value="yes">Always</option>
+                  <option value="no">Never</option>
+                </select>
+              </label>
+            </div>
+            <div class="checks">
+              <label><input type="checkbox" name="log"> Log scale: each gridline is ten times the one below</label>
+              <label><input type="checkbox" name="zero"> Start the value axis at 0</label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Answers</legend>
+            <label class="field"><span>Correct answer</span>
+              <input type="text" name="answer" maxlength="140">
+            </label>
+            <div class="field">
+              <span>Wrong answers</span>
+              <span class="hint">Seven believable alternatives. The best ones fit the shape of the chart but not its numbers.</span>
+              <div class="wrong-list">
+                <input type="text" name="w1" maxlength="140" aria-label="Wrong answer 1">
+                <input type="text" name="w2" maxlength="140" aria-label="Wrong answer 2">
+                <input type="text" name="w3" maxlength="140" aria-label="Wrong answer 3">
+                <input type="text" name="w4" maxlength="140" aria-label="Wrong answer 4">
+                <input type="text" name="w5" maxlength="140" aria-label="Wrong answer 5">
+                <input type="text" name="w6" maxlength="140" aria-label="Wrong answer 6">
+                <input type="text" name="w7" maxlength="140" aria-label="Wrong answer 7">
+              </div>
+            </div>
+            <label class="field"><span>Difficulty</span>
+              <select name="level">
+                <option value="1">Level 1, easiest</option>
+                <option value="2">Level 2</option>
+                <option value="3">Level 3</option>
+                <option value="4">Level 4, hardest: the only level after chart 20</option>
+              </select>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>After answering</legend>
+            <label class="field"><span>Chart title</span>
+              <span class="hint">Optional. Revealed after answering; the correct answer is used if you leave it empty.</span>
+              <input type="text" name="title" maxlength="200">
+            </label>
+            <label class="field"><span>Unit</span>
+              <span class="hint">What the numbers measure, such as “% of GDP” or “million tonnes”.</span>
+              <input type="text" name="unit" maxlength="120">
+            </label>
+            <label class="field"><span>Explanation</span>
+              <span class="hint">A few sentences on what the chart shows and why. A blank line starts a new paragraph.</span>
+              <textarea name="info" rows="6"></textarea>
+            </label>
+            <div class="row">
+              <label class="field"><span>Source</span>
+                <input type="text" name="source" maxlength="200">
+              </label>
+              <label class="field"><span>Source link</span>
+                <input type="url" name="sourceUrl" placeholder="https://">
+              </label>
+            </div>
+            <label class="field"><span>Question id</span>
+              <span class="hint">Made from the correct answer. Each question in a deck needs its own id.</span>
+              <input type="text" name="id" spellcheck="false" maxlength="60">
+            </label>
+          </fieldset>
+
+          <div class="form-actions">
+            <button type="button" class="btn" id="example-btn">Load an example</button>
+            <button type="button" class="btn" id="clear-btn">Clear the form</button>
+          </div>
+        </form>
+
+        <section class="preview-col" aria-label="Preview">
+          <div class="seg" role="group" aria-label="Preview">
+            <button type="button" data-mode="player" aria-pressed="true">As the player sees it</button>
+            <button type="button" data-mode="after" aria-pressed="false">After answering</button>
+          </div>
+
+          <figure class="chart-card" id="card">
+            <div class="chart-head">
+              <div class="chart-title"><span class="real" id="real-title"></span><span class="redact" aria-hidden="true"></span></div>
+              <div class="chart-unit"><span class="real" id="real-unit"></span><span class="redact" aria-hidden="true"></span></div>
+            </div>
+            <div class="chart-box">
+              <canvas id="chart" role="img" aria-label="Preview of your chart"></canvas>
+              <p class="chart-empty" id="chart-empty">Your chart appears here once you paste data.</p>
+            </div>
+          </figure>
+
+          <div id="preview-extra" class="preview-extra"></div>
+
+          <div class="panel-block">
+            <h2>Checks</h2>
+            <ul class="checklist" id="checklist"></ul>
+          </div>
+
+          <div class="panel-block">
+            <h2>Code for your deck</h2>
+            <p class="code-status" id="code-status" aria-live="polite"></p>
+            <textarea id="code" class="code" readonly rows="12" spellcheck="false" aria-label="Generated question code"></textarea>
+            <div class="code-actions">
+              <button type="button" class="btn primary" id="copy-btn">Copy code</button>
+              <span class="hint" id="copy-msg" aria-live="polite"></span>
+            </div>
+            <p class="hint">Open <b>decks/main.js</b>, or your own deck file, and scroll to the end of the questions list. Type a comma after the last question’s closing <code>}</code>, then paste the code on the next line. Reload the game to play it.</p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="foot">
+      <span>Everything you type stays in this browser. Nothing is uploaded.</span>
+      <a href="./">Back to the game</a>
+    </footer>
+  </div>
+
+  <script src="lib/chart.umd.min.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/builder.js"></script>
+</body>
+</html>
